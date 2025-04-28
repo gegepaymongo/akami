@@ -24,8 +24,8 @@ module Akami
       end
 
       ExclusiveXMLCanonicalizationAlgorithm = 'http://www.w3.org/2001/10/xml-exc-c14n#'.freeze
-      RSASHA1SignatureAlgorithm = 'http://www.w3.org/2000/09/xmldsig#rsa-sha1'.freeze
-      SHA1DigestAlgorithm = 'http://www.w3.org/2000/09/xmldsig#sha1'.freeze
+      RSASHA1SignatureAlgorithm = 'http://www.w3.org/2000/09/xmldsig#rsa-sha256'.freeze
+      SHA1DigestAlgorithm = 'http://www.w3.org/2000/09/xmldsig#sha256'.freeze
 
       X509v3ValueType = 'http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-x509-token-profile-1.0#X509v3'.freeze
       Base64EncodingType = 'http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-soap-message-security-1.0#Base64Binary'.freeze
@@ -143,13 +143,13 @@ module Akami
         raise MissingCertificate, "Expected a private_key for signing" unless certs.private_key
         signed_info = at_xpath(@document, "//Envelope/Header/Security/Signature/SignedInfo")
         signed_info = signed_info ? canonicalize(signed_info) : ""
-        signature = certs.private_key.sign(OpenSSL::Digest::SHA1.new, signed_info)
+        signature = certs.private_key.sign(OpenSSL::Digest::SHA256.new, signed_info)
         Base64.encode64(signature).gsub("\n", '') # TODO: DRY calls to Base64.encode64(...).gsub("\n", '')
       end
 
       def body_digest
         body = canonicalize(at_xpath(@document, "//Envelope/Body"))
-        Base64.encode64(OpenSSL::Digest::SHA1.digest(body)).strip
+        Base64.encode64(OpenSSL::Digest::SHA256.digest(body)).strip
       end
 
       def signed_info_digest_method
@@ -161,7 +161,7 @@ module Akami
       end
 
       def uid
-        OpenSSL::Digest::SHA1.hexdigest([Time.now, rand].collect(&:to_s).join('/'))
+        OpenSSL::Digest::SHA256.hexdigest([Time.now, rand].collect(&:to_s).join('/'))
       end
     end
   end
